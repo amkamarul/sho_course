@@ -1,0 +1,794 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>SHO Course Planner</title>
+<meta name="description" content="Day-by-day schedule for the 22-day NIOSH Safety and Health Officer course, 2 Nov to 8 Dec 2026.">
+<meta name="theme-color" content="#FFFFFF" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#191D24" media="(prefers-color-scheme: dark)">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="SHO Planner">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%23F2B705'/%3E%3Crect x='14' y='18' width='36' height='32' rx='4' fill='none' stroke='%231A1500' stroke-width='4'/%3E%3Cpath d='M14 28h36M24 12v10M40 12v10' stroke='%231A1500' stroke-width='4' stroke-linecap='round'/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@500&display=swap">
+<style>
+:root { color-scheme: light; padding-top: env(safe-area-inset-top, 0px); padding-bottom: env(safe-area-inset-bottom, 0px); }
+body { margin: 0; }
+[hidden] { display: none !important; }
+:root {
+  --bg: #EFF1F4; --surface: #FFFFFF; --fg: #151920; --muted: #5B6470; --line: #D8DCE2;
+  --accent: #F2B705; --on-accent: #1A1500;
+  --m1: #1D5FA8; --m2: #1E7A4C; --m3: #A86400; --m4: #B3261E;
+  --brk: #8A929D;
+  --navy: #1C2E5A; --on-navy: #FFFFFF; --on-navy-muted: #B9C4DD; --navy-ink: #1C2E5A;
+  --meter: #1C2E5A; --track: #D8DCE2;
+  --font-display: "Barlow Condensed", "Arial Narrow", sans-serif;
+  --font-body: "IBM Plex Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-mono: "IBM Plex Mono", ui-monospace, "SFMono-Regular", Menlo, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #101318; --surface: #191D24; --fg: #E7EAEE; --muted: #98A1AD; --line: #2B313A;
+    --accent: #F2B705; --on-accent: #1A1500;
+    --m1: #6EA7E6; --m2: #57C08A; --m3: #E6A23A; --m4: #EE736A; --brk: #6E7682;
+    --navy: #22396E; --on-navy: #EEF2FA; --on-navy-muted: #A9B8D8; --navy-ink: #8EA6DA;
+    --meter: #5C7BC0; --track: #2B313A;
+    color-scheme: dark;
+  }
+}
+* { box-sizing: border-box; }
+html { -webkit-text-size-adjust: 100%; }
+body { background: var(--bg); color: var(--fg); font-family: var(--font-body); font-size: 15px; line-height: 1.45; min-height: 100%; }
+body::before { content: ""; position: fixed; inset: 0 0 auto; height: env(safe-area-inset-top, 0px); z-index: 10; background: var(--surface); }
+button { font: inherit; color: inherit; }
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.wrap { max-width: 640px; margin: 0 auto; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); }
+
+/* ── Header ── */
+header { position: sticky; top: env(safe-area-inset-top, 0px); z-index: 5; background: var(--surface); border-bottom: 1px solid var(--line); }
+.head-top { display: flex; align-items: flex-end; justify-content: space-between; gap: 12px; padding-block: 12px 8px; }
+.eyebrow { font-size: 11px; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); font-weight: 600; }
+h1 { margin: 2px 0 0; font-family: var(--font-display); font-weight: 700; font-size: 26px; line-height: 1; letter-spacing: .01em; }
+.seg { display: inline-flex; border: 1px solid var(--line); border-radius: 8px; overflow: hidden; flex-shrink: 0; }
+.seg button { border: 0; background: transparent; padding: 6px 10px; font-size: 13px; font-weight: 600; color: var(--muted); cursor: pointer; }
+.seg button[aria-pressed="true"] { background: var(--fg); color: var(--bg); }
+.status { display: flex; align-items: center; gap: 8px; font-size: 13px; color: var(--muted); padding-bottom: 8px; min-width: 0; }
+.status b { color: var(--fg); font-weight: 600; }
+.today-btn { margin-left: auto; flex-shrink: 0; border: 0; border-radius: 999px; padding: 4px 12px; background: var(--accent); color: var(--on-accent); font-weight: 600; font-size: 13px; cursor: pointer; }
+
+/* ── Date strip ── */
+.strip { display: flex; gap: 6px; overflow-x: auto; scroll-snap-type: x proximity; padding-block: 2px 12px; scrollbar-width: none; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); max-width: 640px; margin: 0 auto; }
+.strip::-webkit-scrollbar { display: none; }
+.chip { flex: 0 0 auto; width: 54px; scroll-snap-align: center; display: flex; flex-direction: column; align-items: center; gap: 1px; padding: 6px 0 7px; border-radius: 10px; border: 1px solid var(--line); background: var(--bg); cursor: pointer; position: relative; }
+.chip.wk { margin-left: 10px; }
+.chip.wk.long { margin-left: 22px; }
+.chip.wk.long::before { content: ""; position: absolute; left: -15px; top: 18px; width: 8px; height: 14px; border-left: 2px dotted var(--muted); border-right: 2px dotted var(--muted); }
+.chip .dow { font-size: 10px; text-transform: uppercase; letter-spacing: .08em; color: var(--muted); font-weight: 600; }
+.chip .dn { font-family: var(--font-display); font-weight: 700; font-size: 22px; line-height: 1.05; font-variant-numeric: tabular-nums; }
+.chip .dd { font-size: 10px; color: var(--muted); font-variant-numeric: tabular-nums; }
+.chip .bar { position: absolute; left: 10px; right: 10px; bottom: 3px; height: 3px; border-radius: 2px; background: var(--mc); }
+.chip.past { opacity: .55; }
+.chip.is-today { border-color: var(--accent); box-shadow: inset 0 0 0 1px var(--accent); }
+.chip.is-today .dow { color: var(--fg); }
+.chip.is-today[aria-selected="true"] { border-color: var(--accent); box-shadow: inset 0 0 0 2px var(--accent); }
+.chip.is-today[aria-selected="true"] .dow { color: var(--accent); }
+.chip[aria-selected="true"] { background: var(--fg); border-color: var(--fg); opacity: 1; }
+.chip[aria-selected="true"] .dow, .chip[aria-selected="true"] .dd, .chip[aria-selected="true"] .dn { color: var(--bg); }
+
+/* ── Day view ── */
+main { padding-block: 16px 40px; }
+.dayhead { display: grid; grid-template-columns: auto 1fr auto; align-items: center; gap: 10px; margin-bottom: 14px; }
+.nav { width: 38px; height: 38px; border-radius: 50%; border: 1px solid var(--line); background: var(--surface); cursor: pointer; display: grid; place-items: center; }
+.nav:disabled { opacity: .35; cursor: default; }
+.nav svg { width: 18px; height: 18px; stroke: currentColor; fill: none; stroke-width: 2; }
+.dayttl { min-width: 0; text-align: center; }
+.dayttl .mod { display: inline-flex; align-items: center; gap: 6px; font-size: 11px; font-weight: 600; letter-spacing: .07em; text-transform: uppercase; color: var(--mc); }
+.dayttl .mod::before { content: ""; width: 8px; height: 8px; border-radius: 2px; background: var(--mc); }
+.dayttl h2 { margin: 2px 0 0; font-family: var(--font-display); font-weight: 700; font-size: 30px; line-height: 1.05; }
+.dayttl .meta { font-size: 13px; color: var(--muted); font-variant-numeric: tabular-nums; }
+.lectrow { margin-top: 6px; display: flex; justify-content: center; }
+.lect { display: inline-flex; align-items: center; gap: 6px; padding: 3px 10px 3px 8px; border-radius: 999px; background: var(--surface); border: 1px solid var(--line); font-size: 13px; font-weight: 600; color: var(--fg); }
+.lect svg { width: 14px; height: 14px; flex-shrink: 0; stroke: var(--mc); fill: none; stroke-width: 2; }
+.lect .lk { font-size: 10.5px; font-weight: 600; letter-spacing: .07em; text-transform: uppercase; color: var(--muted); }
+
+/* ── Timeline ── */
+.tl { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 6px; }
+.row { display: grid; grid-template-columns: 52px 1fr; gap: 10px; align-items: stretch; }
+.time { font-family: var(--font-mono); font-size: 12.5px; font-variant-numeric: tabular-nums; color: var(--muted); padding-top: 11px; line-height: 1.25; }
+.time span { display: block; font-size: 11px; opacity: .75; }
+.card { min-width: 0; background: var(--surface); border: 1px solid var(--line); border-left: 4px solid var(--mc); border-radius: 8px; padding: 10px 12px; position: relative; }
+.card .t { font-weight: 600; font-size: 15px; line-height: 1.3; overflow-wrap: anywhere; }
+.card .sub { font-size: 12.5px; color: var(--muted); margin-top: 2px; }
+.card .trainer { display: inline-block; margin-left: 8px; padding: 0 6px; border-radius: 4px; background: color-mix(in srgb, var(--mc) 14%, transparent); color: var(--mc); font-size: 10.5px; font-weight: 700; letter-spacing: .06em; vertical-align: 1px; }
+.card .dur { font-size: 12px; color: var(--muted); margin-top: 4px; font-variant-numeric: tabular-nums; }
+.tag { display: inline-block; font-size: 10.5px; font-weight: 600; letter-spacing: .06em; text-transform: uppercase; padding: 1px 6px; border-radius: 4px; border: 1px solid var(--line); color: var(--muted); margin-left: 6px; vertical-align: 2px; }
+.row.cont .card { border-left-style: dashed; }
+.row.now .card { box-shadow: 0 0 0 2px var(--accent); }
+.nowpill { display: none; position: absolute; top: -9px; right: 10px; background: var(--accent); color: var(--on-accent); font-size: 10.5px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; padding: 1px 7px; border-radius: 999px; }
+.row.now .nowpill { display: block; }
+
+/* Breaks */
+.row.pause .time { padding-top: 4px; }
+.pausebar { display: flex; align-items: center; gap: 8px; font-size: 12px; color: var(--brk); font-weight: 600; letter-spacing: .06em; text-transform: uppercase; padding-block: 4px; }
+.pausebar::after { content: ""; flex: 1; height: 0; border-top: 1px dashed var(--line); }
+.row.pause.meal .pausebar { color: var(--m3); }
+.row.pause.now .pausebar { color: var(--fg); }
+.row.pause.now .pausebar::before { content: "Now"; background: var(--accent); color: var(--on-accent); padding: 0 6px; border-radius: 999px; font-size: 10.5px; }
+
+/* Done sessions → navy */
+.row.done .card { background: var(--navy); border-color: var(--navy); border-left-color: var(--mc); }
+.row.done .card .t { color: var(--on-navy); }
+.row.done .card .sub, .row.done .card .dur { color: var(--on-navy-muted); }
+.row.done .tag { color: var(--on-navy-muted); border-color: var(--on-navy-muted); }
+.row.done .card .trainer { background: transparent; color: var(--on-navy-muted); border: 1px solid var(--on-navy-muted); }
+.row.done .time { color: var(--navy-ink); }
+.row.done.pause .pausebar { color: var(--navy-ink); }
+
+/* Progress meter */
+.tlwrap { position: relative; padding-left: 20px; }
+.meter { position: absolute; left: 4px; top: 0; bottom: 0; width: 6px; border-radius: 3px; background: var(--track); }
+.meter .fill { position: absolute; left: 0; right: 0; top: 0; height: 0; border-radius: 3px; background: var(--meter); transition: height .4s ease; }
+.meter .cap { position: absolute; left: 50%; width: 12px; height: 2px; margin-left: -6px; background: var(--muted); }
+.meter .cap.s { top: 0; } .meter .cap.e { bottom: 0; }
+.nowline { position: absolute; left: 0; width: 20px; height: 0; border-top: 2px solid var(--accent); pointer-events: none; z-index: 3; transition: top .4s ease; }
+.nowline::before { content: ""; position: absolute; left: 0; top: -9px; width: 14px; height: 14px; border-radius: 50%; background: var(--accent); border: 2px solid var(--bg); box-sizing: border-box; }
+.nowline span { position: absolute; left: 18px; top: -11px; background: var(--accent); color: var(--on-accent); font-family: var(--font-mono); font-size: 11px; font-weight: 500; padding: 1px 6px; border-radius: 999px; white-space: nowrap; font-variant-numeric: tabular-nums; }
+.daypct { font-size: 12.5px; color: var(--muted); margin: -6px 0 10px; text-align: center; font-variant-numeric: tabular-nums; }
+.daypct b { color: var(--fg); }
+@media (prefers-reduced-motion: reduce) { .meter .fill, .nowline { transition: none; } }
+
+/* Remarks */
+.remark { margin-top: 14px; background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: 10px 12px 12px; }
+.remark-h { display: flex; align-items: baseline; justify-content: space-between; gap: 10px; margin-bottom: 6px; }
+.remark label { font-size: 11px; font-weight: 600; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); }
+.remark .saved { font-size: 11.5px; color: var(--muted); }
+.remark .saved.err { color: var(--m4); }
+.remark textarea { display: block; width: 100%; min-height: 84px; resize: vertical; font: inherit; font-size: 16px; line-height: 1.45; color: var(--fg); background: var(--bg); border: 1px solid var(--line); border-radius: 6px; padding: 8px 10px; }
+.remark textarea::placeholder { color: var(--muted); opacity: .8; }
+.remark textarea:focus { outline: none; border-color: var(--mc); box-shadow: 0 0 0 2px color-mix(in srgb, var(--mc) 25%, transparent); }
+
+/* Notes / alerts */
+.endline { margin-top: 12px; font-size: 13px; color: var(--muted); text-align: center; }
+.note { margin-top: 14px; background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: 10px 12px; font-size: 13px; color: var(--muted); }
+.note b { color: var(--fg); }
+.note.alert { border-color: var(--m4); }
+.note.alert, .note.alert b { color: var(--m4); }
+
+/* All-days view */
+.daysec { margin-bottom: 26px; }
+.daysec-h { display: flex; align-items: baseline; gap: 10px; width: 100%; text-align: left; background: transparent; border: 0; border-bottom: 2px solid var(--mc); padding: 0 0 6px; margin-bottom: 10px; cursor: pointer; flex-wrap: wrap; }
+.daysec-h .n { font-family: var(--font-display); font-weight: 700; font-size: 22px; }
+.daysec-h .d { font-size: 13px; color: var(--muted); }
+.daysec-h .m { margin-left: auto; font-size: 11px; font-weight: 600; letter-spacing: .07em; text-transform: uppercase; color: var(--mc); white-space: nowrap; }
+.daysec-h.is-today .n::after { content: "Today"; margin-left: 8px; background: var(--accent); color: var(--on-accent); font-family: var(--font-body); font-size: 10.5px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; padding: 1px 7px; border-radius: 999px; vertical-align: 4px; }
+.daysec-h .lectrow { flex-basis: 100%; justify-content: flex-start; margin-top: 2px; }
+.daysec-h .lect { background: transparent; border: 0; padding: 0; font-size: 13px; }
+.holrow { display: flex; align-items: center; gap: 10px; margin: -8px 0 26px; padding: 10px 12px; border: 1px dashed var(--line); border-radius: 8px; color: var(--muted); font-size: 13px; }
+.holrow b { color: var(--fg); font-family: var(--font-display); font-size: 18px; font-weight: 700; }
+
+/* Footer */
+footer { padding-block: 8px 32px; font-size: 12px; color: var(--muted); }
+footer details { border-top: 1px solid var(--line); padding-top: 12px; }
+footer summary { cursor: pointer; font-weight: 600; color: var(--fg); }
+footer ul { padding-left: 18px; margin: 8px 0 0; }
+.legend { display: flex; flex-wrap: wrap; gap: 6px 14px; margin-top: 10px; }
+.legend span { display: inline-flex; align-items: center; gap: 6px; }
+.legend i { width: 10px; height: 10px; border-radius: 2px; background: var(--mc); display: inline-block; }
+
+@media (prefers-reduced-motion: no-preference) {
+  .anim { animation: fadein .18s ease-out; }
+  @keyframes fadein { from { opacity: .4; transform: translateX(var(--dx, 0)); } to { opacity: 1; transform: none; } }
+}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="wrap">
+    <div class="head-top">
+      <div style="min-width:0">
+        <div class="eyebrow">NIOSH · Safety &amp; Health Officer</div>
+        <h1>SHO Course Planner</h1>
+      </div>
+      <div class="seg" role="group" aria-label="View">
+        <button id="v-day" type="button" aria-pressed="true">Day</button>
+        <button id="v-all" type="button" aria-pressed="false">All days</button>
+      </div>
+    </div>
+    <div class="status" id="status"></div>
+  </div>
+  <div class="strip" id="strip" role="tablist" aria-label="Course days"></div>
+</header>
+
+<main class="wrap" id="main"></main>
+
+<footer class="wrap">
+  <div class="legend" id="legend"></div>
+  <details style="margin-top:14px">
+    <summary>About this schedule</summary>
+    <ul>
+      <li>Based on the NIOSH SHO course curriculum, Rev. YS260526 (2026). 22 days / 165.5 hours.</li>
+      <li>Runs Mon 2 Nov to Tue 8 Dec 2026. Day 6 moved to Mon 16 Nov — no class 7–15 Nov.</li>
+      <li>Day 11 (23 Nov): Examination Briefing (Taklimat Ujian) is at 08:30, opening the day.</li>
+      <li>Day 22: Site visit. Bring PPE including safety boots. Breakfast served at 08:00.</li>
+      <li>Remarks are saved in this browser on this device only.</li>
+    </ul>
+  </details>
+</footer>
+
+<script>
+(function () {
+  var B = "BREAK", L = "LUNCH", BF = "BREAKFAST";
+  function sameDay(a, b) { return a.getFullYear()===b.getFullYear() && a.getMonth()===b.getMonth() && a.getDate()===b.getDate(); }
+  var MODS = {
+    M1: { name:"Module 1", full:"OSH Legislation",           v:"--m1" },
+    M2: { name:"Module 2", full:"Occupational Safety",        v:"--m2" },
+    M3: { name:"Module 3", full:"Occupational Health & Hygiene", v:"--m3" },
+    M4: { name:"Module 4", full:"OSH Management",             v:"--m4" }
+  };
+
+  var DAYS = [
+    ["M1",[
+      ["0815","0845","Registration and Course Briefing",null,"NIOSH"],
+      ["0845","1015","OSH Introduction and Terminology"],
+      ["1015","1030",B],
+      ["1030","1300","OSH Introduction and Terminology (cont.)"],
+      ["1300","1400",L],
+      ["1400","1530","Policy - Organisation & Arrangements"],
+      ["1530","1545",B],
+      ["1545","1730","Policy - Organisation & Arrangements (cont.)"]
+    ]],
+    ["M1",[
+      ["0830","1030","Occupational Safety & Health Act 1994"],
+      ["1030","1045",B],
+      ["1045","1245","Occupational Safety & Health Act 1994 (cont.)"],
+      ["1300","1400",L],
+      ["1400","1530","OSH (Safety and Health Officer) Regulations 1997"],
+      ["1530","1545",B],
+      ["1545","1745","OSH (Safety and Health Officer) Regulations 1997 (cont.)"]
+    ]],
+    ["M1",[
+      ["0830","1030","OSH (Safety and Health Committee) Regulations 1996"],
+      ["1030","1045",B],
+      ["1045","1145","OSH (Safety and Health Committee) Regulations 1996 (cont.)"],
+      ["1145","1300","OSH (CIMAH) Regulations 1996","Control of Industrial Major Accident Hazards"],
+      ["1300","1400",L],
+      ["1400","1445","OSH (CIMAH) Regulations 1996 (cont.)"],
+      ["1445","1545","OSH (USECHH) Regulations 2000","Use and Standards of Exposure of Chemicals Hazardous to Health"],
+      ["1545","1600",B],
+      ["1600","1700","OSH (USECHH) Regulations 2000 (cont.)"]
+    ]],
+    ["M1",[
+      ["0845","1045","OSH (CLASS) Regulations 2013","Classification, Labelling and Safety Data Sheet of Hazardous Chemicals"],
+      ["1045","1100",B],
+      ["1100","1300","OSH (Noise Exposure) Regulations 2019"],
+      ["1300","1400",L],
+      ["1400","1600","OSH (NADOPOD) Regulations 2004","Notification of Accidents, Dangerous Occurrence, Occupational Poisoning and Occupational Disease"],
+      ["1600","1615",B],
+      ["1615","1815","OSH (Construction Works)(Design and Management) Regulations 2024"]
+    ]],
+    ["M1",[
+      ["0830","1030","OSH (Plant Requiring Certificate of Fitness) Regulations 2024"],
+      ["1030","1045",B],
+      ["1045","1245","OSH (Special Scheme of Inspection) Regulations 2024"],
+      ["1300","1430",L],
+      ["1430","1630","OSH (Fee for Registration of Competent Person & Registered Training Provider) Regulations 2024"],
+      ["1630","1645",B],
+      ["1645","1845","Use of Industrial Code of Practice (ICOP) and Guideline"]
+    ]],
+    ["M1",[
+      ["0845","1045","Social Security Management (PERKESO)","Other related legislation","PERKESO"],
+      ["1045","1100",B],
+      ["1100","1200","Work-related Road Safety (WRRS) Management","Other related legislation","PERKESO"],
+      ["1200","1300","Fire Safety Management","Other related legislation","BOMBA"],
+      ["1300","1400",L],
+      ["1400","1600","Fire Safety Management (cont.)",null,"BOMBA"],
+      ["1600","1615",B],
+      ["1615","1715","Fire Safety Management (cont.)",null,"BOMBA"],
+      ["1715","1815","Labour and Employment Management","Other related legislation","JTK"]
+    ]],
+    ["M2",[
+      ["0830","1030","Introduction & Overview of Other Related Legislation & Codes of Practices"],
+      ["1030","1045",B],
+      ["1045","1245","Machinery Hazard"],
+      ["1245","1400",L],
+      ["1400","1600","Safe Guarding of Machinery"],
+      ["1600","1615",B],
+      ["1615","1815","Safe Machine Operation"]
+    ]],
+    ["M2",[
+      ["0845","1045","Machinery Maintenance"],
+      ["1045","1100",B],
+      ["1100","1300","General Area Fencing"],
+      ["1300","1400",L],
+      ["1400","1600","Certificated Machinery"],
+      ["1600","1615",B],
+      ["1615","1815","Mechanical Handling"]
+    ]],
+    ["M2",[
+      ["0845","1045","Transportation Safety"],
+      ["1045","1100",B],
+      ["1100","1300","Electrical Safety"],
+      ["1300","1400",L],
+      ["1400","1600","Hot Work Safety"],
+      ["1600","1615",B],
+      ["1615","1815","Confined Space Safety"]
+    ]],
+    ["M2",[
+      ["0830","1030","Construction Safety"],
+      ["1030","1045",B],
+      ["1045","1245","Construction Safety (cont.)"],
+      ["1300","1430",L],
+      ["1430","1530","Construction Safety (cont.)"],
+      ["1530","1545",B],
+      ["1545","1745","Working at Height Safety"]
+    ]],
+    ["M2",[
+      ["0830","0915","Examination Briefing","Taklimat Ujian"],
+      ["0915","1015","Safe Use of Hand Tools and Portable Power Tools"],
+      ["1015","1030",B],
+      ["1030","1130","Safe Use of Hand Tools and Portable Power Tools (cont.)"],
+      ["1130","1300","Office Safety"],
+      ["1300","1400",L],
+      ["1400","1430","Office Safety (cont.)"],
+      ["1430","1530","Housekeeping and Physical Arrangement"],
+      ["1530","1545",B],
+      ["1545","1645","Housekeeping and Physical Arrangement (cont.)"]
+    ]],
+    ["M3",[
+      ["0830","0930","SOHELP"],
+      ["0930","1030","Overview of Occupational Health"],
+      ["1030","1045",B],
+      ["1045","1145","Overview of Occupational Health (cont.)"],
+      ["1145","1245","Epidemiology"],
+      ["1300","1400",L],
+      ["1400","1500","Epidemiology (cont.)"],
+      ["1500","1515",B],
+      ["1515","1715","Occupational Health Standards"]
+    ]],
+    ["M3",[
+      ["0900","1000","Introduction and Fundamentals of Toxicology"],
+      ["1000","1015",B],
+      ["1015","1115","Introduction and Fundamentals of Toxicology (cont.)"],
+      ["1115","1245","Overview and Basic Principles of Industrial Hygiene"],
+      ["1300","1400",L],
+      ["1400","1430","Overview and Basic Principles of Industrial Hygiene (cont.)"],
+      ["1430","1530","Occupational Stress"],
+      ["1530","1545",B],
+      ["1545","1645","Occupational Stress (cont.)"],
+      ["1645","1745","Generic Occupational Health"]
+    ]],
+    ["M3",[
+      ["0845","1045","Occupational Ergonomics"],
+      ["1045","1100",B],
+      ["1100","1300","Occupational Ergonomics (cont.)"],
+      ["1300","1400",L],
+      ["1400","1600","Ergonomics Risk Factors & Assessment"],
+      ["1600","1615",B],
+      ["1615","1815","Ergonomics Risk Management"]
+    ]],
+    ["M3",[
+      ["0845","1045","Chemical Management"],
+      ["1045","1100",B],
+      ["1100","1300","Chemical Management (cont.)"],
+      ["1300","1400",L],
+      ["1400","1600","Pesticides"],
+      ["1600","1615",B],
+      ["1615","1815","Application of Classification, Labelling and Safety Data Sheet of Hazardous Chemicals"]
+    ]],
+    ["M3",[
+      ["0830","1030","Chemical & Biological Monitoring & Medical Surveillance"],
+      ["1030","1045",B],
+      ["1045","1245","Chemical & Biological Monitoring & Medical Surveillance (cont.)"],
+      ["1300","1430",L],
+      ["1430","1630","Ventilation & Indoor Air Quality"],
+      ["1630","1645",B],
+      ["1645","1845","Ventilation & Indoor Air Quality (cont.)"]
+    ]],
+    ["M3",[
+      ["0830","1030","Managing Occupational Hazard: Biological Hazard"],
+      ["1030","1045",B],
+      ["1045","1245","Physical Hazard","Noise, Radiation, Vibration, Pressure, Heat Stress"],
+      ["1300","1400",L],
+      ["1400","1600","Physical Hazard (cont.)"],
+      ["1600","1615",B],
+      ["1615","1715","Physical Hazard (cont.)"]
+    ]],
+    ["M4",[
+      ["0845","1045","Occupational Risk Management at Workplace"],
+      ["1045","1100",B],
+      ["1100","1300","Occupational Risk Management at Workplace (cont.)"],
+      ["1300","1400",L],
+      ["1400","1600","Occupational Risk Management at Workplace (cont.)"],
+      ["1600","1615",B],
+      ["1615","1815","Occupational Risk Management at Workplace (cont.)"]
+    ]],
+    ["M4",[
+      ["0845","1045","OSH Management Systems (ISO 45001:2018)"],
+      ["1045","1100",B],
+      ["1100","1300","OSH Management Systems (ISO 45001:2018) (cont.)"],
+      ["1300","1400",L],
+      ["1400","1600","Incident Prevention"],
+      ["1600","1615",B],
+      ["1615","1815","Incident Prevention (cont.)"]
+    ]],
+    ["M4",[
+      ["0845","1045","Communication & Performance Monitoring"],
+      ["1045","1100",B],
+      ["1100","1300","Communication & Performance Monitoring (cont.)"],
+      ["1300","1400",L],
+      ["1400","1500","Communication & Performance Monitoring (cont.)"],
+      ["1500","1515",B],
+      ["1515","1715","Managing of Emergency"]
+    ]],
+    ["M4",[
+      ["0845","1045","Managing of Emergency"],
+      ["1045","1100",B],
+      ["1100","1300","Managing of Emergency (cont.)"],
+      ["1300","1400",L],
+      ["1400","1600","Managing of Emergency (cont.)"],
+      ["1600","1615",B],
+      ["1615","1815","WPA - Workplace Assignment Preparation"]
+    ]],
+    ["M4",[
+      ["0800","0830",BF],
+      ["0830","0900","Briefing: Workplace Assignment (WPA) Site Visit"],
+      ["0900","1300","Workplace Assignment (WPA): Site Visit","Bring your PPE, including safety boots"],
+      ["1300","1400",L],
+      ["1400","1600","WPA: Discussion & Report Writing"],
+      ["1600","1615",B],
+      ["1615","1815","WPA: Presentation"],
+      ["1815","1845","Evaluation and Closing",null,"NIOSH"]
+    ]]
+  ];
+
+  // INFO: [year, month(0-based), day], lecturer, kind?
+  var INFO = [
+    [[2026,10,2],"Hj Saifullah"],  [[2026,10,3],"Hj Adnan"],       [[2026,10,4],"Hj Saifullah"],
+    [[2026,10,5],"Hj Saifullah"],  [[2026,10,6],"Hj Saifullah"],   [[2026,10,16],"External Parties"],
+    [[2026,10,17],"En Hezam"],     [[2026,10,18],"En Hezam"],       [[2026,10,19],"En Hezam"],
+    [[2026,10,20],"En Hezam"],     [[2026,10,23],"En. Khairuddin"], [[2026,10,24],"En. Khairuddin"],
+    [[2026,10,25],"En. Khairuddin"],[[2026,10,26],"En. Khairuddin"],[[2026,10,27],"En. Khairuddin"],
+    [[2026,10,30],"En. Herman"],   [[2026,11,1],"Zuliaran"],        [[2026,11,2],"Zuliaran"],
+    [[2026,11,3],"Hj Saifullah"],  [[2026,11,4],"Hj Saifullah"],   [[2026,11,7],"En Hezam"],
+    [[2026,11,8],"Hj Saifullah","activity"]
+  ];
+
+  var dates = INFO.map(function(r){ return new Date(r[0][0],r[0][1],r[0][2]); });
+  var LECT  = INFO.map(function(r){ return { name:r[1], kind:r[2]||"lecturer" }; });
+  var DOW  = ["Sun","Mon","Tue","Wed","Thu","Fri","Sat"];
+  var DOWL = ["Sunday","Monday","Tuesday","Wednesday","Thursday","Friday","Saturday"];
+  var MON  = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+  var DAY_MS = 86400000;
+  function gapDays(a,b){ return Math.round((b-a)/DAY_MS); }
+
+  var personSvg = '<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4.4 3.6-7 8-7s8 2.6 8 7"/></svg>';
+  var pinSvg    = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 22s7-6.2 7-12a7 7 0 1 0-14 0c0 5.8 7 12 7 12z"/><circle cx="12" cy="10" r="2.5"/></svg>';
+  function lectHtml(i){
+    var lk = LECT[i].kind==="activity";
+    return '<span class="lect">'+(lk?pinSvg:personSvg)+'<span class="lk">'+(lk?"Activity":"Lecturer")+'</span> '+esc(LECT[i].name)+'</span>';
+  }
+  function fmtDate(dt){ return DOW[dt.getDay()]+" "+dt.getDate()+" "+MON[dt.getMonth()]; }
+  function mins(s){ return +s.slice(0,2)*60+ +s.slice(2); }
+  function fmt(s){ return s.slice(0,2)+":"+s.slice(2); }
+  function dur(m){ var h=Math.floor(m/60),r=m%60; return (h?h+" h":"")+(h&&r?" ":"")+(r?r+" min":""); }
+  function esc(s){ return String(s).replace(/[&<>"]/g,function(c){return{"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c];}); }
+  function classHours(sess){
+    var t=0; sess.forEach(function(s){if(s[2]!==B&&s[2]!==L&&s[2]!==BF)t+=mins(s[1])-mins(s[0]);}); return t/60;
+  }
+
+  var store = {
+    get:function(k){try{return localStorage.getItem(k);}catch(e){return null;}},
+    set:function(k,v){try{localStorage.setItem(k,v);return true;}catch(e){return false;}}
+  };
+
+  var now, todayIdx, startOfToday, startIdx;
+  function readToday(){
+    now = new Date();
+    startOfToday = new Date(now.getFullYear(),now.getMonth(),now.getDate());
+    todayIdx = -1; startIdx = DAYS.length-1;
+    for(var k=0;k<dates.length;k++){
+      if(sameDay(dates[k],now)){todayIdx=k;startIdx=k;break;}
+      if(dates[k]>startOfToday){startIdx=k;break;}
+    }
+  }
+  readToday();
+
+  var view="day", sel=startIdx;
+  var strip=document.getElementById("strip");
+  var main=document.getElementById("main");
+  var statusEl=document.getElementById("status");
+
+  // Legend
+  document.getElementById("legend").innerHTML =
+    Object.keys(MODS).map(function(k){
+      return '<span style="--mc:var('+MODS[k].v+')"><i></i>'+MODS[k].name+" · "+MODS[k].full+"</span>";
+    }).join("")+'<span style="--mc:var(--navy)"><i></i>Completed</span>';
+
+  function renderStatus(){
+    var msg, label="Today";
+    var after = startOfToday > dates[dates.length-1];
+    if(todayIdx>=0) msg="Today is <b>Day "+(todayIdx+1)+"</b> of 22";
+    else if(startOfToday<dates[0]){
+      var n=Math.round((dates[0]-startOfToday)/DAY_MS);
+      msg="Starts <b>"+fmtDate(dates[0])+"</b> · in "+n+(n===1?" day":" days"); label="Day 1";
+    } else if(after) msg="Course completed on <b>"+fmtDate(dates[dates.length-1])+"</b>";
+    else { msg="No class today · next is <b>Day "+(startIdx+1)+"</b>, "+fmtDate(dates[startIdx]); label="Next class"; }
+    var btn=after?"":'<button class="today-btn" id="go-today" type="button">'+label+"</button>";
+    statusEl.innerHTML='<span style="min-width:0">'+msg+"</span>"+btn;
+    var g=document.getElementById("go-today");
+    if(g) g.onclick=function(){setView("day");select(startIdx,0);};
+  }
+
+  function renderStrip(){
+    strip.innerHTML=dates.map(function(dt,i){
+      var mod=MODS[DAYS[i][0]], cls="chip";
+      if(i>0&&gapDays(dates[i-1],dt)>1) cls+=gapDays(dates[i-1],dt)>3?" wk long":" wk";
+      if(i===todayIdx) cls+=" is-today";
+      if(dt<startOfToday&&i!==todayIdx) cls+=" past";
+      return '<button type="button" role="tab" id="chip-'+i+'" class="'+cls+'" style="--mc:var('+mod.v+')" aria-selected="'+(i===sel&&view==="day")+'" aria-label="Day '+(i+1)+", "+DOWL[dt.getDay()]+" "+dt.getDate()+" "+MON[dt.getMonth()]+'" data-i="'+i+'">' +
+        '<span class="dow">'+(i===todayIdx?"Today":DOW[dt.getDay()])+"</span>"+
+        '<span class="dn">'+dt.getDate()+"</span>"+
+        '<span class="dd">Day '+(i+1)+"</span>"+
+        '<span class="bar"></span></button>';
+    }).join("");
+  }
+
+  strip.addEventListener("click",function(e){
+    var b=e.target.closest(".chip"); if(!b||b.dataset.i===undefined) return;
+    var i=+b.dataset.i;
+    if(view==="all"){
+      var sec=document.getElementById("sec-"+i);
+      if(sec){ var hh=document.querySelector("header").getBoundingClientRect().height; window.scrollTo({top:sec.getBoundingClientRect().top+window.scrollY-hh-8,behavior:reduce()?"auto":"smooth"}); }
+      return;
+    }
+    select(i,i>sel?1:-1);
+  });
+
+  function reduce(){ return window.matchMedia&&window.matchMedia("(prefers-reduced-motion: reduce)").matches; }
+  function centerChip(i,instant){
+    var c=typeof i==="string"?document.getElementById(i):document.getElementById("chip-"+i);
+    if(!c) return;
+    var sr=strip.getBoundingClientRect(),cr=c.getBoundingClientRect();
+    var target=strip.scrollLeft+(cr.left-sr.left)-(sr.width-cr.width)/2;
+    target=Math.max(0,Math.min(target,strip.scrollWidth-strip.clientWidth));
+    if(instant||reduce()) strip.scrollLeft=target; else strip.scrollTo({left:target,behavior:"smooth"});
+  }
+  function showToday(){ if(view==="day"&&sel===startIdx) centerChip(startIdx,true); }
+
+  function sessionRows(i){
+    var sess=DAYS[i][1];
+    return sess.map(function(s){
+      var a=mins(s[0]),b=mins(s[1]),t=s[2];
+      if(t===B||t===L||t===BF){
+        var label=t===B?"Tea break":t===L?"Lunch":"Breakfast";
+        return '<li class="row pause'+(t!==B?" meal":"")+'" data-a="'+a+'" data-b="'+b+'">' +
+          '<div class="time">'+fmt(s[0])+"</div>" +
+          '<div class="pausebar">'+label+" · "+dur(b-a)+"</div></li>";
+      }
+      var cont=/ \(cont\.\)$/.test(t);
+      var title=cont?t.replace(/ \(cont\.\)$/,""):t;
+      return '<li class="row'+(cont?" cont":"")+'" data-a="'+a+'" data-b="'+b+'">' +
+        '<div class="time">'+fmt(s[0])+"<span>"+fmt(s[1])+"</span></div>" +
+        '<div class="card"><span class="nowpill">Now</span>' +
+        '<div class="t">'+esc(title)+(cont?'<span class="tag">cont.</span>':"")+"</div>" +
+        (s[3]?'<div class="sub">'+esc(s[3])+"</div>":"") +
+        '<div class="dur">'+dur(b-a)+(s[4]?'<span class="trainer">'+esc(s[4])+"</span>":"")+"</div></div></li>";
+    }).join("");
+  }
+
+  function timeline(i){
+    return '<div class="tlwrap" data-i="'+i+'">' +
+      '<div class="meter" aria-hidden="true"><div class="fill"></div><i class="cap s"></i><i class="cap e"></i></div>' +
+      '<ol class="tl">'+sessionRows(i)+"</ol>" +
+      '<div class="nowline" hidden><span></span></div></div>';
+  }
+
+  function dayPhase(i){
+    if(dates[i]<startOfToday) return -1;
+    if(dates[i]>startOfToday) return 1;
+    return 0;
+  }
+
+  function updateProgress(){
+    var nm=now.getHours()*60+now.getMinutes()+now.getSeconds()/60;
+    main.querySelectorAll(".tlwrap").forEach(function(wrap){
+      var i=+wrap.dataset.i, phase=dayPhase(i);
+      var rows=wrap.querySelectorAll(".row");
+      var list=wrap.querySelector(".tl");
+      var fill=wrap.querySelector(".fill");
+      var line=wrap.querySelector(".nowline");
+      var total=list.offsetHeight, y=0;
+      rows.forEach(function(r){
+        var a=+r.dataset.a, b=+r.dataset.b;
+        r.classList.toggle("done", phase<0||(phase===0&&nm>=b));
+        r.classList.toggle("now",  phase===0&&nm>=a&&nm<b);
+      });
+      if(phase<0) y=total;
+      else if(phase===0){
+        var first=+rows[0].dataset.a, last=+rows[rows.length-1].dataset.b;
+        if(nm<=first) y=0;
+        else if(nm>=last) y=total;
+        else {
+          for(var k=0;k<rows.length;k++){
+            var r=rows[k],a=+r.dataset.a,b=+r.dataset.b;
+            if(nm<a){y=r.offsetTop-3;break;}
+            if(nm<b){y=r.offsetTop+(nm-a)/(b-a)*r.offsetHeight;break;}
+          }
+        }
+      }
+      fill.style.height=Math.max(0,Math.min(total,y))+"px";
+      if(phase===0){
+        line.hidden=false; line.style.top=Math.max(0,Math.min(total,y))+"px";
+        var sp=line.querySelector("span");
+        if(sp) sp.textContent=String(now.getHours()).padStart(2,"0")+":"+String(now.getMinutes()).padStart(2,"0");
+      } else line.hidden=true;
+
+      var pct=wrap.parentNode.querySelector(".daypct");
+      if(pct){
+        var f=rows.length?+rows[0].dataset.a:0, l=rows.length?+rows[rows.length-1].dataset.b:0;
+        if(phase===0){
+          var p=Math.round(Math.max(0,Math.min(1,(nm-f)/(l-f)))*100);
+          var left=Math.max(0,Math.round(l-nm));
+          pct.innerHTML=nm<f?"Class starts at <b>"+fmt(String(Math.floor(f/60)).padStart(2,"0")+String(f%60).padStart(2,"0"))+"</b>"
+            :nm>=l?"<b>Done for today</b>"
+            :"Now <b>"+String(now.getHours()).padStart(2,"0")+":"+String(now.getMinutes()).padStart(2,"0")+"</b> · <b>"+p+"%</b> of today done · "+dur(left)+" to go";
+          pct.hidden=false;
+        } else pct.hidden=true;
+      }
+    });
+  }
+
+  function remarkKey(i){ return "sho-remark-"+(i+1); }
+  function getRemark(i){ var v=store.get(remarkKey(i)); return v===null?"":v; }
+  function remarkBox(i){
+    return '<div class="remark">' +
+      '<div class="remark-h"><label for="remark-'+i+'">Remarks · Day '+(i+1)+"</label>" +
+      '<span class="saved" id="saved-'+i+'" aria-live="polite"></span></div>' +
+      '<textarea id="remark-'+i+'" class="rmk" data-i="'+i+'" rows="3" ' +
+      'placeholder="Notes for this day: homework, room changes, things to bring…"></textarea></div>';
+  }
+  function grow(t){ t.style.height="auto"; t.style.height=Math.max(t.scrollHeight+2,84)+"px"; }
+  function fillRemarks(){
+    main.querySelectorAll("textarea.rmk").forEach(function(t){
+      t.value=getRemark(+t.dataset.i); grow(t);
+      var sv=document.getElementById("saved-"+t.dataset.i);
+      if(sv&&t.value) sv.textContent="Saved on this device";
+    });
+  }
+  var saveTimers={};
+  main.addEventListener("input",function(e){
+    var t=e.target; if(!t.classList||!t.classList.contains("rmk")) return;
+    grow(t);
+    var i=+t.dataset.i, sv=document.getElementById("saved-"+i);
+    if(sv) sv.textContent="Saving…";
+    clearTimeout(saveTimers[i]);
+    saveTimers[i]=setTimeout(function(){
+      var ok=store.set(remarkKey(i),t.value);
+      if(sv) sv.textContent=ok?"Saved on this device":"Not saved: browser blocks storage";
+      if(sv) sv.classList.toggle("err",!ok);
+      updateProgress();
+    },400);
+  });
+
+  function renderDay(dir){
+    var i=sel, dt=dates[i], mod=MODS[DAYS[i][0]], sess=DAYS[i][1];
+    var first=sess[0][0], last=sess[sess.length-1][1];
+    var hrs=classHours(sess);
+    var prevSvg='<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 6l-6 6 6 6"/></svg>';
+    var nextSvg='<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg>';
+    var extra="";
+    if(i<DAYS.length-1&&gapDays(dt,dates[i+1])>3)
+      extra+='<div class="note"><b>Break after today.</b> Day '+(i+2)+" is on "+fmtDate(dates[i+1])+" ("+(gapDays(dt,dates[i+1])-1)+" days off).</div>";
+    if(i===5)  extra+='<div class="note"><b>Guest speakers today</b> from PERKESO, BOMBA and JTK.</div>';
+    if(i===10) extra+='<div class="note"><b>Examination briefing</b> (Taklimat Ujian) opens the day at 08:30.</div>';
+    if(i===21) extra+='<div class="note alert"><b>Site visit day.</b> Bring your PPE, including safety boots. Breakfast at 08:00.</div>';
+    main.innerHTML=
+      '<section class="anim" style="--mc:var('+mod.v+');--dx:'+(dir?dir*18:0)+'px">'+
+      '<div class="dayhead">'+
+        '<button class="nav" id="prev" type="button" aria-label="Previous day"'+(i===0?" disabled":"")+">"+prevSvg+"</button>"+
+        '<div class="dayttl"><div class="mod">'+mod.name+" · "+mod.full+"</div>"+
+          "<h2>Day "+(i+1)+" · "+DOW[dt.getDay()]+" "+dt.getDate()+" "+MON[dt.getMonth()]+"</h2>"+
+          '<div class="meta">'+fmt(first)+"–"+fmt(last)+" · "+hrs.toFixed(2).replace(/\.?0+$/,"")+" h of class</div>"+
+          '<div class="lectrow">'+lectHtml(i)+"</div></div>"+
+        '<button class="nav" id="next" type="button" aria-label="Next day"'+(i===DAYS.length-1?" disabled":"")+">"+nextSvg+"</button>"+
+      "</div>"+
+      '<div class="daypct" hidden></div>'+
+      timeline(i)+extra+
+      '<div class="endline">'+(i===DAYS.length-1?"End of course · ":"End of Day "+(i+1)+" · ")+fmt(last)+"</div>"+
+      remarkBox(i)+
+      "</section>";
+    document.getElementById("prev").onclick=function(){if(sel>0)select(sel-1,-1);};
+    document.getElementById("next").onclick=function(){if(sel<DAYS.length-1)select(sel+1,1);};
+    fillRemarks(); updateProgress();
+  }
+
+  function renderAll(){
+    main.innerHTML=DAYS.map(function(day,i){
+      var dt=dates[i], mod=MODS[day[0]], sess=day[1];
+      var pre=(i>0&&gapDays(dates[i-1],dt)>3)
+        ?'<div class="holrow"><b>Break</b><span>No class '+fmtDate(new Date(+dates[i-1]+DAY_MS))+" – "+fmtDate(new Date(+dt-DAY_MS))+"</span></div>":"";
+      return pre+'<section class="daysec" id="sec-'+i+'" style="--mc:var('+mod.v+')">'+
+        '<button type="button" class="daysec-h'+(i===todayIdx?" is-today":"")+'" data-i="'+i+'">'+
+          '<span class="n">Day '+(i+1)+"</span>"+
+          '<span class="d">'+DOW[dt.getDay()]+" "+dt.getDate()+" "+MON[dt.getMonth()]+" · "+fmt(sess[0][0])+"–"+fmt(sess[sess.length-1][1])+"</span>"+
+          '<span class="m">'+mod.name+"</span>"+
+          '<span class="lectrow">'+lectHtml(i)+"</span></button>"+
+        timeline(i)+remarkBox(i)+"</section>";
+    }).join("");
+    fillRemarks(); updateProgress();
+    main.querySelectorAll(".daysec-h").forEach(function(b){
+      b.onclick=function(){setView("day");select(+b.dataset.i,0);};
+    });
+  }
+
+  function select(i,dir){
+    sel=i; store.set("sho-day",String(i));
+    strip.querySelectorAll(".chip").forEach(function(c){c.setAttribute("aria-selected",String(+c.dataset.i===i&&view==="day"));});
+    renderDay(dir); centerChip(i);
+    if(window.scrollY>0) window.scrollTo({top:0,behavior:"auto"});
+  }
+
+  function setView(v){
+    view=v; store.set("sho-view",v);
+    document.getElementById("v-day").setAttribute("aria-pressed",String(v==="day"));
+    document.getElementById("v-all").setAttribute("aria-pressed",String(v==="all"));
+    renderStrip();
+    if(v==="day"){renderDay(0);centerChip(sel);}
+    else {
+      renderAll();
+      var sec=document.getElementById("sec-"+startIdx);
+      if(sec&&startIdx>0){var hh=document.querySelector("header").getBoundingClientRect().height;window.scrollTo(0,sec.getBoundingClientRect().top+window.scrollY-hh-8);}
+      else window.scrollTo(0,0);
+    }
+  }
+
+  document.getElementById("v-day").onclick=function(){if(view!=="day"){setView("day");window.scrollTo(0,0);}};
+  document.getElementById("v-all").onclick=function(){if(view!=="all")setView("all");};
+
+  // Swipe
+  var sx=0,sy=0,tracking=false;
+  main.addEventListener("touchstart",function(e){
+    if(view!=="day"||e.touches.length!==1||e.target.closest("textarea")) return;
+    sx=e.touches[0].clientX; sy=e.touches[0].clientY; tracking=true;
+  },{passive:true});
+  main.addEventListener("touchend",function(e){
+    if(!tracking) return; tracking=false;
+    var t=e.changedTouches[0],dx=t.clientX-sx,dy=t.clientY-sy;
+    if(Math.abs(dx)>60&&Math.abs(dx)>Math.abs(dy)*1.5){
+      if(dx<0&&sel<DAYS.length-1) select(sel+1,1);
+      else if(dx>0&&sel>0) select(sel-1,-1);
+    }
+  },{passive:true});
+
+  // Keyboard
+  document.addEventListener("keydown",function(e){
+    if(view!=="day"||e.target.closest("input,textarea")) return;
+    if(e.key==="ArrowRight"&&sel<DAYS.length-1) select(sel+1,1);
+    if(e.key==="ArrowLeft"&&sel>0) select(sel-1,-1);
+  });
+
+  // Midnight refresh
+  function refresh(){
+    var n=new Date();
+    if(!sameDay(n,now)){readToday();renderStatus();sel=startIdx;setView("day");window.scrollTo(0,0);showToday();}
+    else{now=n;updateProgress();}
+  }
+  setInterval(refresh,30000);
+  window.addEventListener("resize",updateProgress);
+  if(document.fonts&&document.fonts.ready) document.fonts.ready.then(updateProgress);
+  document.addEventListener("visibilitychange",function(){if(!document.hidden)refresh();});
+  window.addEventListener("pageshow",function(){refresh();showToday();});
+
+  renderStatus(); setView(view); showToday();
+  requestAnimationFrame(showToday);
+  window.addEventListener("load",showToday);
+  if(document.fonts&&document.fonts.ready) document.fonts.ready.then(showToday);
+})();
+</script>
+</body>
+</html>
