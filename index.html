@@ -1,0 +1,1098 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>SHO Course Planner · NIOSH</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=DM+Serif+Display&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #f0f2f5;
+    --surface: #ffffff;
+    --surface2: #f7f8fa;
+    --border: #e2e5ea;
+    --text: #111827;
+    --text2: #6b7280;
+    --text3: #9ca3af;
+    --accent: #1e3a5f;
+    --accent2: #2563eb;
+    --accent-light: #dbeafe;
+    --mod1: #1e3a5f;
+    --mod2: #065f46;
+    --mod3: #7c2d12;
+    --mod4: #4c1d95;
+    --today-border: #f59e0b;
+    --today-bg: #fffbeb;
+    --break-bg: #f9fafb;
+    --break-text: #9ca3af;
+    --now-color: #f59e0b;
+    --radius: 10px;
+    --shadow: 0 1px 3px rgba(0,0,0,.08), 0 1px 2px rgba(0,0,0,.04);
+    --shadow-md: 0 4px 12px rgba(0,0,0,.10);
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #0f1117;
+      --surface: #1a1d27;
+      --surface2: #22263a;
+      --border: #2d3148;
+      --text: #f1f5f9;
+      --text2: #94a3b8;
+      --text3: #64748b;
+      --accent: #93c5fd;
+      --accent2: #60a5fa;
+      --accent-light: #1e3a5f;
+      --break-bg: #131620;
+      --break-text: #64748b;
+      --today-bg: #2d2200;
+      --today-border: #f59e0b;
+    }
+  }
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { height: 100%; font-family: 'Inter', system-ui, sans-serif; background: var(--bg); color: var(--text); }
+
+  /* ── HEADER ── */
+  .app-header {
+    background: var(--accent);
+    color: #fff;
+    padding: 20px 24px 16px;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    box-shadow: var(--shadow-md);
+  }
+  .header-top {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 12px;
+    flex-wrap: wrap;
+  }
+  .brand-label {
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: .08em;
+    opacity: .7;
+    text-transform: uppercase;
+    margin-bottom: 4px;
+  }
+  .brand-title {
+    font-family: 'DM Serif Display', Georgia, serif;
+    font-size: 26px;
+    font-weight: 400;
+    line-height: 1.1;
+  }
+  .view-toggle {
+    display: flex;
+    background: rgba(255,255,255,.12);
+    border-radius: 8px;
+    padding: 3px;
+    gap: 2px;
+    flex-shrink: 0;
+    margin-top: 2px;
+  }
+  .view-btn {
+    padding: 5px 14px;
+    border-radius: 6px;
+    border: none;
+    background: transparent;
+    color: rgba(255,255,255,.75);
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    font-family: inherit;
+    transition: background .15s, color .15s;
+  }
+  .view-btn.active {
+    background: rgba(255,255,255,.95);
+    color: var(--accent);
+  }
+
+  /* ── DAY STRIP ── */
+  .day-strip-wrapper {
+    background: var(--accent);
+    padding: 10px 24px 0;
+    border-bottom: 1px solid rgba(255,255,255,.1);
+  }
+  .day-strip {
+    display: flex;
+    gap: 6px;
+    overflow-x: auto;
+    scrollbar-width: none;
+    padding-bottom: 10px;
+  }
+  .day-strip::-webkit-scrollbar { display: none; }
+  .day-chip {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 8px 10px 6px;
+    border-radius: 8px;
+    border: 1.5px solid transparent;
+    cursor: pointer;
+    min-width: 56px;
+    flex-shrink: 0;
+    transition: background .15s, border-color .15s;
+    background: rgba(255,255,255,.08);
+    color: rgba(255,255,255,.75);
+  }
+  .day-chip:hover { background: rgba(255,255,255,.15); }
+  .day-chip.today {
+    background: var(--today-bg);
+    border-color: var(--today-border);
+    color: var(--accent);
+  }
+  .day-chip.selected:not(.today) {
+    background: rgba(255,255,255,.22);
+    border-color: rgba(255,255,255,.5);
+    color: #fff;
+  }
+  .chip-dow { font-size: 10px; font-weight: 600; letter-spacing: .05em; opacity: .7; text-transform: uppercase; }
+  .chip-date { font-size: 20px; font-weight: 700; line-height: 1.1; margin: 1px 0; }
+  .chip-day { font-size: 10px; font-weight: 500; opacity: .65; }
+  .day-chip.today .chip-dow, .day-chip.today .chip-day { opacity: .6; }
+  .chip-dot { width: 4px; height: 4px; border-radius: 50%; background: var(--today-border); margin-top: 3px; display: none; }
+  .day-chip.today .chip-dot { display: block; }
+
+  /* ── CONTENT AREA ── */
+  .content { max-width: 740px; margin: 0 auto; padding: 0 16px 40px; }
+
+  /* ── DAY HERO ── */
+  .day-hero {
+    background: var(--surface);
+    border-radius: var(--radius);
+    padding: 24px 24px 20px;
+    margin-top: 20px;
+    box-shadow: var(--shadow);
+    text-align: center;
+  }
+  .module-tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: .08em;
+    text-transform: uppercase;
+    margin-bottom: 10px;
+  }
+  .mod-dot { width: 8px; height: 8px; border-radius: 2px; flex-shrink: 0; }
+  .hero-day-title {
+    font-family: 'DM Serif Display', Georgia, serif;
+    font-size: 36px;
+    font-weight: 400;
+    color: var(--text);
+    line-height: 1.1;
+    margin-bottom: 4px;
+  }
+  .hero-meta {
+    font-size: 13px;
+    color: var(--text2);
+    margin-bottom: 14px;
+  }
+  .lecturer-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    padding: 5px 14px 5px 10px;
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--text);
+    margin-bottom: 14px;
+  }
+  .lecturer-badge svg { opacity: .5; }
+  .progress-line {
+    font-size: 12px;
+    color: var(--text2);
+    margin-bottom: 10px;
+  }
+  .progress-bar-wrap {
+    background: var(--border);
+    border-radius: 4px;
+    height: 5px;
+    overflow: hidden;
+    max-width: 300px;
+    margin: 0 auto;
+  }
+  .progress-bar { height: 100%; background: var(--accent2); border-radius: 4px; transition: width .4s ease; }
+
+  .nav-row {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 24px;
+    margin-top: 16px;
+  }
+  .nav-btn {
+    width: 36px; height: 36px;
+    border-radius: 50%;
+    border: 1.5px solid var(--border);
+    background: var(--surface);
+    cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    transition: background .15s, border-color .15s;
+    color: var(--text2);
+    flex-shrink: 0;
+  }
+  .nav-btn:hover { background: var(--surface2); border-color: var(--accent2); color: var(--accent2); }
+  .today-btn {
+    padding: 6px 16px;
+    border-radius: 20px;
+    background: var(--today-border);
+    color: #fff;
+    font-size: 13px;
+    font-weight: 600;
+    border: none;
+    cursor: pointer;
+    font-family: inherit;
+    transition: opacity .15s;
+  }
+  .today-btn:hover { opacity: .88; }
+
+  /* ── SCHEDULE TIMELINE ── */
+  .timeline { margin-top: 16px; display: flex; flex-direction: column; gap: 2px; }
+  .slot-row {
+    display: grid;
+    grid-template-columns: 60px 1fr;
+    gap: 10px;
+    align-items: start;
+  }
+  .slot-time {
+    padding-top: 12px;
+    font-size: 11px;
+    color: var(--text3);
+    font-weight: 500;
+    text-align: right;
+    line-height: 1.3;
+    font-variant-numeric: tabular-nums;
+  }
+  .slot-body { padding: 2px 0 2px; }
+
+  /* session block */
+  .session-block {
+    background: var(--accent);
+    color: #fff;
+    border-radius: var(--radius);
+    padding: 14px 16px;
+    position: relative;
+    overflow: hidden;
+    box-shadow: var(--shadow);
+  }
+  .session-block::before {
+    content: '';
+    position: absolute;
+    left: 0; top: 0; bottom: 0;
+    width: 4px;
+    background: rgba(255,255,255,.25);
+  }
+  .session-block.mod1 { background: var(--mod1); }
+  .session-block.mod2 { background: var(--mod2); }
+  .session-block.mod3 { background: var(--mod3); }
+  .session-block.mod4 { background: var(--mod4); }
+  .session-block.special { background: #374151; }
+  .session-block.wpa { background: #064e3b; }
+
+  .session-block.now-active {
+    outline: 2.5px solid var(--now-color);
+    outline-offset: 1px;
+  }
+  .now-pill {
+    position: absolute;
+    top: 10px; right: 12px;
+    background: var(--now-color);
+    color: #fff;
+    font-size: 10px;
+    font-weight: 700;
+    padding: 2px 7px;
+    border-radius: 10px;
+    letter-spacing: .06em;
+  }
+  .cont-badge {
+    display: inline-block;
+    background: rgba(255,255,255,.18);
+    font-size: 10px;
+    font-weight: 600;
+    padding: 2px 7px;
+    border-radius: 4px;
+    margin-left: 8px;
+    vertical-align: middle;
+    letter-spacing: .05em;
+  }
+  .session-title { font-size: 15px; font-weight: 600; line-height: 1.35; }
+  .session-desc { font-size: 12px; opacity: .75; margin-top: 3px; }
+  .session-dur { font-size: 12px; opacity: .65; margin-top: 6px; font-weight: 500; }
+
+  /* break row */
+  .break-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 7px 0 7px 70px;
+  }
+  .break-line { flex: 1; height: 1px; background: var(--border); }
+  .break-label { font-size: 11px; color: var(--text3); font-weight: 500; letter-spacing: .04em; white-space: nowrap; }
+
+  /* now marker */
+  .now-marker-row {
+    display: grid;
+    grid-template-columns: 60px 1fr;
+    gap: 10px;
+    align-items: center;
+  }
+  .now-time-label {
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--now-color);
+    text-align: right;
+  }
+  .now-line {
+    height: 2px;
+    background: var(--now-color);
+    border-radius: 1px;
+    position: relative;
+  }
+  .now-line::before {
+    content: '';
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    background: var(--now-color);
+    position: absolute;
+    left: -4px; top: -3px;
+  }
+
+  /* ── ALL DAYS VIEW ── */
+  .all-days-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 14px;
+    margin-top: 20px;
+  }
+  .day-card {
+    background: var(--surface);
+    border-radius: var(--radius);
+    padding: 16px;
+    box-shadow: var(--shadow);
+    cursor: pointer;
+    transition: box-shadow .15s, transform .1s;
+    border: 1.5px solid transparent;
+  }
+  .day-card:hover { box-shadow: var(--shadow-md); transform: translateY(-1px); }
+  .day-card.is-today { border-color: var(--today-border); background: var(--today-bg); }
+  .day-card-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    margin-bottom: 10px;
+  }
+  .day-card-num { font-size: 11px; color: var(--text3); font-weight: 600; letter-spacing: .05em; }
+  .day-card-date { font-size: 15px; font-weight: 700; color: var(--text); }
+  .day-card-trainer {
+    font-size: 11px;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    padding: 2px 10px;
+    color: var(--text2);
+    font-weight: 500;
+  }
+  .day-card-topics { display: flex; flex-direction: column; gap: 4px; }
+  .topic-pill {
+    font-size: 12px;
+    color: #fff;
+    background: var(--mod1);
+    border-radius: 5px;
+    padding: 4px 10px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .topic-pill.mod2 { background: var(--mod2); }
+  .topic-pill.mod3 { background: var(--mod3); }
+  .topic-pill.mod4 { background: var(--mod4); }
+  .topic-pill.special { background: #374151; }
+  .today-tag {
+    font-size: 10px;
+    font-weight: 700;
+    background: var(--today-border);
+    color: #fff;
+    padding: 2px 7px;
+    border-radius: 10px;
+  }
+
+  /* ── LEGEND ── */
+  .legend {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-top: 20px;
+    padding: 14px 16px;
+    background: var(--surface);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+  }
+  .legend-item { display: flex; align-items: center; gap: 6px; font-size: 12px; color: var(--text2); }
+  .legend-dot { width: 10px; height: 10px; border-radius: 3px; flex-shrink: 0; }
+
+  /* ── NOTE BANNER ── */
+  .note-banner {
+    margin-top: 16px;
+    padding: 12px 16px;
+    background: #fef3c7;
+    border: 1px solid #fcd34d;
+    border-radius: var(--radius);
+    font-size: 13px;
+    color: #92400e;
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+  }
+  .note-banner.info { background: #eff6ff; border-color: #bfdbfe; color: #1e40af; }
+
+  @media (max-width: 540px) {
+    .app-header { padding: 16px 16px 12px; }
+    .day-strip-wrapper { padding: 8px 16px 0; }
+    .brand-title { font-size: 22px; }
+    .hero-day-title { font-size: 28px; }
+    .content { padding: 0 12px 32px; }
+    .all-days-grid { grid-template-columns: 1fr; }
+    .slot-row { grid-template-columns: 52px 1fr; gap: 8px; }
+    .break-row { padding-left: 62px; }
+    .now-marker-row { grid-template-columns: 52px 1fr; gap: 8px; }
+  }
+</style>
+</head>
+<body>
+
+<header class="app-header">
+  <div class="header-top">
+    <div>
+      <div class="brand-label">NIOSH · Safety &amp; Health Officer</div>
+      <div class="brand-title">SHO Course Planner</div>
+    </div>
+    <div class="view-toggle">
+      <button class="view-btn active" id="btnDay" onclick="setView('day')">Day</button>
+      <button class="view-btn" id="btnAll" onclick="setView('all')">All days</button>
+    </div>
+  </div>
+</header>
+
+<div class="day-strip-wrapper" id="stripWrapper">
+  <div class="day-strip" id="dayStrip"></div>
+</div>
+
+<div class="content">
+  <div id="dayView"></div>
+  <div id="allView" style="display:none"></div>
+</div>
+
+<script>
+// ═══════════════════════════════════════════
+// DATA
+// ═══════════════════════════════════════════
+
+const MOD = {
+  1: { label: "Module 1 · OSH Legislation", color: "#1e3a5f", cls: "mod1" },
+  2: { label: "Module 2 · Occupational Safety", color: "#065f46", cls: "mod2" },
+  3: { label: "Module 3 · Occ. Health & Hygiene", color: "#7c2d12", cls: "mod3" },
+  4: { label: "Module 4 · OSH Management", color: "#4c1d95", cls: "mod4" },
+};
+
+// 22 class days with dates, trainers, and their daily schedule
+const DAYS = [
+  {
+    dayNum: 1, date: "2026-11-02", dow: "MON", trainer: "Hj Saifullah", module: 1,
+    totalHours: 7.5,
+    schedule: [
+      { time: "08:15", end: "08:45", dur: "0.5 h", topic: "Registration and Course Briefing", desc: "", type: "special" },
+      { time: "08:45", end: "10:15", dur: "1.5 h", topic: "OSH Introduction and Terminology", type: "mod1" },
+      { type: "break", label: "MORNING TEA BREAK · 15 MIN", time: "10:15" },
+      { time: "10:30", end: "13:00", dur: "2.5 h", topic: "OSH Introduction and Terminology", cont: true, type: "mod1" },
+      { type: "break", label: "LUNCH · 1 HR", time: "13:00" },
+      { time: "14:00", end: "15:30", dur: "1.5 h", topic: "Policy – Organisation & Arrangements", type: "mod1" },
+      { type: "break", label: "AFTERNOON TEA BREAK · 15 MIN", time: "15:30" },
+      { time: "15:45", end: "17:30", dur: "1.5 h", topic: "Policy – Organisation & Arrangements", cont: true, type: "mod1" },
+    ]
+  },
+  {
+    dayNum: 2, date: "2026-11-03", dow: "TUE", trainer: "Hj Adnan", module: 1,
+    totalHours: 7.0,
+    schedule: [
+      { time: "08:30", end: "10:30", dur: "2 h", topic: "Occupational Safety & Health Act 1994", type: "mod1" },
+      { type: "break", label: "MORNING TEA BREAK · 15 MIN", time: "10:30" },
+      { time: "10:45", end: "12:45", dur: "2 h", topic: "OSH Act 1994", cont: true, type: "mod1" },
+      { type: "break", label: "LUNCH · 1 HR", time: "13:00" },
+      { time: "14:00", end: "15:30", dur: "1.5 h", topic: "OSH (Safety and Health Officer) Regulations 1997", type: "mod1" },
+      { type: "break", label: "AFTERNOON TEA BREAK · 15 MIN", time: "15:30" },
+      { time: "15:45", end: "17:45", dur: "1.5 h", topic: "OSH (SHO) Regulations 1997", cont: true, type: "mod1" },
+    ]
+  },
+  {
+    dayNum: 3, date: "2026-11-04", dow: "WED", trainer: "Hj Saifullah", module: 1,
+    totalHours: 7.0,
+    schedule: [
+      { time: "08:30", end: "10:30", dur: "2 h", topic: "OSH (Safety and Health Committee) Regulations 1996", type: "mod1" },
+      { type: "break", label: "MORNING TEA BREAK · 15 MIN", time: "10:30" },
+      { time: "10:45", end: "11:45", dur: "1 h", topic: "OSH (Safety and Health Committee) Regulations 1996", cont: true, type: "mod1" },
+      { time: "11:45", end: "13:00", dur: "1.25 h", topic: "OSH (CIMAH) Regulations 1996", desc: "Control of Industrial Major Accident Hazards", type: "mod1" },
+      { type: "break", label: "LUNCH · 1 HR", time: "13:00" },
+      { time: "14:00", end: "14:45", dur: "0.75 h", topic: "OSH (CIMAH) Regulations 1996", cont: true, type: "mod1" },
+      { time: "14:45", end: "15:45", dur: "1 h", topic: "OSH (Use & Standards of Exposure of Chemicals Hazardous to Health) Regulations 2000", type: "mod1" },
+      { type: "break", label: "AFTERNOON TEA BREAK · 15 MIN", time: "15:45" },
+      { time: "16:00", end: "17:00", dur: "1 h", topic: "OSH (USECHH) Regulations 2000", cont: true, type: "mod1" },
+    ]
+  },
+  {
+    dayNum: 4, date: "2026-11-05", dow: "THU", trainer: "Hj Saifullah", module: 1,
+    totalHours: 8.0,
+    schedule: [
+      { time: "08:45", end: "10:45", dur: "2 h", topic: "OSH (Classification, Labelling & Safety Data Sheet of Hazardous Chemicals) Regulations 2013", type: "mod1" },
+      { type: "break", label: "MORNING TEA BREAK · 15 MIN", time: "10:45" },
+      { time: "11:00", end: "13:00", dur: "2 h", topic: "OSH (Noise Exposure) Regulations 2019", type: "mod1" },
+      { type: "break", label: "LUNCH · 1 HR", time: "13:00" },
+      { time: "14:00", end: "16:00", dur: "2 h", topic: "OSH (Notification of Accidents, Dangerous Occurrence, Occ. Poisoning & Occ. Disease) Regulations 2004", type: "mod1" },
+      { type: "break", label: "AFTERNOON TEA BREAK · 15 MIN", time: "16:00" },
+      { time: "16:15", end: "18:15", dur: "2 h", topic: "OSH (Construction Works)(Design and Management) Regulations 2024", type: "mod1" },
+    ]
+  },
+  {
+    dayNum: 5, date: "2026-11-06", dow: "FRI", trainer: "Hj Saifullah", module: 1,
+    totalHours: 8.0,
+    schedule: [
+      { time: "08:30", end: "10:30", dur: "2 h", topic: "OSH (Plant Requiring Certificate & Fitness) Regulations 2024", type: "mod1" },
+      { type: "break", label: "MORNING TEA BREAK · 15 MIN", time: "10:30" },
+      { time: "10:45", end: "12:45", dur: "2 h", topic: "OSH (Special Scheme of Inspection) Regulations 2024", type: "mod1" },
+      { type: "break", label: "LUNCH · 1 HR", time: "13:00" },
+      { time: "14:30", end: "16:30", dur: "2 h", topic: "OSH (Fee For Registration of Competent Person & Registered Training Provider) Regulations 2024", type: "mod1" },
+      { type: "break", label: "AFTERNOON TEA BREAK · 15 MIN", time: "16:30" },
+      { time: "16:45", end: "18:45", dur: "2 h", topic: "Use of Industrial Code of Practice (ICOP) and Guideline", type: "mod1" },
+    ]
+  },
+  {
+    dayNum: 6, date: "2026-11-16", dow: "MON", trainer: "BOMBA / PERKESO / JPAM", module: 1,
+    totalHours: 8.0,
+    schedule: [
+      { time: "08:45", end: "10:45", dur: "2 h", topic: "OSH Social Security Management (PERKESO)", desc: "Guest: PERKESO", type: "mod1" },
+      { type: "break", label: "MORNING TEA BREAK · 15 MIN", time: "10:45" },
+      { time: "11:00", end: "12:00", dur: "1 h", topic: "Work-related Road Safety (WRRS) Management", desc: "Guest: PERKESO", type: "mod1" },
+      { time: "12:00", end: "13:00", dur: "1 h", topic: "Fire Safety Management", desc: "Guest: BOMBA", type: "mod1" },
+      { type: "break", label: "LUNCH · 1 HR", time: "13:00" },
+      { time: "14:00", end: "16:00", dur: "2 h", topic: "Fire Safety Management", cont: true, type: "mod1" },
+      { type: "break", label: "AFTERNOON TEA BREAK · 15 MIN", time: "16:00" },
+      { time: "16:15", end: "17:15", dur: "1 h", topic: "Fire Safety Management", cont: true, type: "mod1" },
+      { time: "17:15", end: "18:15", dur: "1 h", topic: "Labour and Employment Management", desc: "Guest: JTK", type: "mod1" },
+    ]
+  },
+  {
+    dayNum: 7, date: "2026-11-17", dow: "TUE", trainer: "En Hezam", module: 2,
+    totalHours: 8.0,
+    schedule: [
+      { time: "08:30", end: "10:30", dur: "2 h", topic: "Introduction & Overview of Other Related Legislation & Codes of Practices", type: "mod1" },
+      { type: "break", label: "MORNING TEA BREAK · 15 MIN", time: "10:30" },
+      { time: "10:45", end: "12:45", dur: "2 h", topic: "Machinery Hazard", type: "mod2" },
+      { type: "break", label: "LUNCH · 1.25 HR", time: "12:45" },
+      { time: "14:00", end: "16:00", dur: "2 h", topic: "Safe Guarding of Machinery", type: "mod2" },
+      { type: "break", label: "AFTERNOON TEA BREAK · 15 MIN", time: "15:00" },
+      { time: "15:15", end: "18:15", dur: "2 h", topic: "Safe Machine Operation", type: "mod2" },
+    ]
+  },
+  {
+    dayNum: 8, date: "2026-11-18", dow: "WED", trainer: "En Hezam", module: 2,
+    totalHours: 8.0,
+    schedule: [
+      { time: "08:45", end: "10:45", dur: "2 h", topic: "Machinery Maintenance", type: "mod2" },
+      { type: "break", label: "MORNING TEA BREAK · 15 MIN", time: "10:45" },
+      { time: "11:00", end: "13:00", dur: "2 h", topic: "General Area Fencing", type: "mod2" },
+      { type: "break", label: "LUNCH · 1 HR", time: "13:00" },
+      { time: "14:00", end: "16:00", dur: "2 h", topic: "Certificated Machinery", type: "mod2" },
+      { type: "break", label: "AFTERNOON TEA BREAK · 15 MIN", time: "16:00" },
+      { time: "16:15", end: "18:15", dur: "2 h", topic: "Mechanical Handling", type: "mod2" },
+    ]
+  },
+  {
+    dayNum: 9, date: "2026-11-19", dow: "THU", trainer: "En Hezam", module: 2,
+    totalHours: 8.0,
+    schedule: [
+      { time: "08:45", end: "10:45", dur: "2 h", topic: "Transportation Safety", type: "mod2" },
+      { type: "break", label: "MORNING TEA BREAK · 15 MIN", time: "10:45" },
+      { time: "11:00", end: "13:00", dur: "2 h", topic: "Electrical Safety", type: "mod2" },
+      { type: "break", label: "LUNCH · 1 HR", time: "13:00" },
+      { time: "14:00", end: "16:00", dur: "2 h", topic: "Hot Work Safety", type: "mod2" },
+      { type: "break", label: "AFTERNOON TEA BREAK · 15 MIN", time: "16:00" },
+      { time: "16:15", end: "18:15", dur: "2 h", topic: "Confined Space Safety", type: "mod2" },
+    ]
+  },
+  {
+    dayNum: 10, date: "2026-11-20", dow: "FRI", trainer: "En Hezam", module: 2,
+    totalHours: 7.0,
+    schedule: [
+      { time: "08:30", end: "10:30", dur: "2 h", topic: "Construction Safety", type: "mod2" },
+      { type: "break", label: "MORNING TEA BREAK · 15 MIN", time: "10:30" },
+      { time: "10:45", end: "12:45", dur: "2 h", topic: "Construction Safety", cont: true, type: "mod2" },
+      { type: "break", label: "LUNCH · 1 HR", time: "13:00" },
+      { time: "14:30", end: "15:30", dur: "1 h", topic: "Construction Safety", cont: true, type: "mod2" },
+      { type: "break", label: "AFTERNOON TEA BREAK · 15 MIN", time: "15:30" },
+      { time: "15:45", end: "17:45", dur: "2 h", topic: "Working at Height Safety", type: "mod2" },
+    ]
+  },
+  {
+    dayNum: 11, date: "2026-11-23", dow: "MON", trainer: "En. Khairuddin", module: 2,
+    totalHours: 6.75,
+    schedule: [
+      { time: "08:30", end: "09:15", dur: "0.75 h", topic: "Examination Briefing", desc: "TAKLIMAT UJIAN", type: "special" },
+      { time: "09:15", end: "10:15", dur: "1 h", topic: "Safe Use of Hand Tools and Portable Power Tools", type: "mod2" },
+      { type: "break", label: "MORNING TEA BREAK · 15 MIN", time: "10:15" },
+      { time: "10:30", end: "11:30", dur: "1 h", topic: "Hand Tools & Power Tools", cont: true, type: "mod2" },
+      { time: "11:30", end: "13:00", dur: "1.5 h", topic: "Office Safety", type: "mod2" },
+      { type: "break", label: "LUNCH · 1 HR", time: "13:00" },
+      { time: "14:00", end: "14:30", dur: "0.5 h", topic: "Office Safety", cont: true, type: "mod2" },
+      { time: "14:30", end: "15:30", dur: "1 h", topic: "Housekeeping and Physical Arrangement", type: "mod2" },
+      { type: "break", label: "AFTERNOON TEA BREAK · 15 MIN", time: "15:30" },
+      { time: "15:45", end: "16:45", dur: "1 h", topic: "Housekeeping", cont: true, type: "mod2" },
+    ]
+  },
+  {
+    dayNum: 12, date: "2026-11-24", dow: "TUE", trainer: "En. Khairuddin", module: 3,
+    totalHours: 7.0,
+    schedule: [
+      { time: "08:30", end: "09:30", dur: "1 h", topic: "SOHELP", type: "mod3" },
+      { time: "09:30", end: "10:30", dur: "1 h", topic: "Overview of Occupational Health", type: "mod3" },
+      { type: "break", label: "MORNING TEA BREAK · 15 MIN", time: "10:30" },
+      { time: "10:45", end: "11:45", dur: "1 h", topic: "Overview of Occupational Health", cont: true, type: "mod3" },
+      { time: "11:45", end: "12:45", dur: "1 h", topic: "Epidemiology", type: "mod3" },
+      { type: "break", label: "LUNCH · 1 HR", time: "13:00" },
+      { time: "14:00", end: "15:00", dur: "1 h", topic: "Epidemiology", cont: true, type: "mod3" },
+      { type: "break", label: "AFTERNOON TEA BREAK · 15 MIN", time: "15:00" },
+      { time: "15:15", end: "17:15", dur: "2 h", topic: "Occupational Health Standards", type: "mod3" },
+    ]
+  },
+  {
+    dayNum: 13, date: "2026-11-25", dow: "WED", trainer: "En. Khairuddin", module: 3,
+    totalHours: 7.0,
+    schedule: [
+      { time: "09:00", end: "10:00", dur: "1 h", topic: "Introduction and Fundamentals of Toxicology", type: "mod3" },
+      { type: "break", label: "MORNING TEA BREAK · 15 MIN", time: "10:00" },
+      { time: "10:15", end: "11:15", dur: "1 h", topic: "Toxicology", cont: true, type: "mod3" },
+      { time: "11:15", end: "12:45", dur: "1.5 h", topic: "Overview and Basic Principles of Industrial Hygiene", type: "mod3" },
+      { type: "break", label: "LUNCH · 1 HR", time: "13:00" },
+      { time: "14:00", end: "14:30", dur: "0.5 h", topic: "Industrial Hygiene", cont: true, type: "mod3" },
+      { time: "14:30", end: "15:30", dur: "1 h", topic: "Occupational Stress", type: "mod3" },
+      { type: "break", label: "AFTERNOON TEA BREAK · 15 MIN", time: "15:30" },
+      { time: "15:45", end: "16:45", dur: "1 h", topic: "Occupational Stress", cont: true, type: "mod3" },
+      { time: "16:45", end: "17:45", dur: "1 h", topic: "Generic Occupational Health", type: "mod3" },
+    ]
+  },
+  {
+    dayNum: 14, date: "2026-11-26", dow: "THU", trainer: "En. Khairuddin", module: 3,
+    totalHours: 8.0,
+    schedule: [
+      { time: "08:45", end: "10:45", dur: "2 h", topic: "Occupational Ergonomics", type: "mod3" },
+      { type: "break", label: "MORNING TEA BREAK · 15 MIN", time: "10:45" },
+      { time: "11:00", end: "13:00", dur: "2 h", topic: "Occupational Ergonomics", cont: true, type: "mod3" },
+      { type: "break", label: "LUNCH · 1 HR", time: "13:00" },
+      { time: "14:00", end: "16:00", dur: "2 h", topic: "Ergonomics Risk Factors & Assessment", type: "mod3" },
+      { type: "break", label: "AFTERNOON TEA BREAK · 15 MIN", time: "16:00" },
+      { time: "16:15", end: "18:15", dur: "2 h", topic: "Ergonomics Risk Management", type: "mod3" },
+    ]
+  },
+  {
+    dayNum: 15, date: "2026-11-27", dow: "FRI", trainer: "En. Khairuddin", module: 3,
+    totalHours: 8.0,
+    schedule: [
+      { time: "08:45", end: "10:45", dur: "2 h", topic: "Chemical Management", type: "mod3" },
+      { type: "break", label: "MORNING TEA BREAK · 15 MIN", time: "10:45" },
+      { time: "11:00", end: "13:00", dur: "2 h", topic: "Chemical Management", cont: true, type: "mod3" },
+      { type: "break", label: "LUNCH · 1 HR", time: "13:00" },
+      { time: "14:00", end: "16:00", dur: "2 h", topic: "Pesticides", type: "mod3" },
+      { type: "break", label: "AFTERNOON TEA BREAK · 15 MIN", time: "16:00" },
+      { time: "16:15", end: "18:15", dur: "2 h", topic: "Application of Classification Labelling and Safety Data Sheet of Hazardous Chemicals", type: "mod3" },
+    ]
+  },
+  {
+    dayNum: 16, date: "2026-11-30", dow: "MON", trainer: "En. Herman", module: 3,
+    totalHours: 8.0,
+    schedule: [
+      { time: "08:30", end: "10:30", dur: "2 h", topic: "Chemical & Biological Monitoring & Medical Surveillance", type: "mod3" },
+      { type: "break", label: "MORNING TEA BREAK · 15 MIN", time: "10:30" },
+      { time: "10:45", end: "12:45", dur: "2 h", topic: "Chemical & Biological Monitoring", cont: true, type: "mod3" },
+      { type: "break", label: "LUNCH · 1 HR", time: "13:00" },
+      { time: "14:30", end: "16:30", dur: "2 h", topic: "Ventilation & Indoor Air Quality", type: "mod3" },
+      { type: "break", label: "AFTERNOON TEA BREAK · 15 MIN", time: "16:30" },
+      { time: "16:45", end: "18:45", dur: "2 h", topic: "Ventilation & Indoor Air Quality", cont: true, type: "mod3" },
+    ]
+  },
+  {
+    dayNum: 17, date: "2026-12-01", dow: "TUE", trainer: "Zuliaran", module: 3,
+    totalHours: 7.0,
+    schedule: [
+      { time: "08:30", end: "10:30", dur: "2 h", topic: "Managing Occupational Hazard – Biological Hazard", type: "mod3" },
+      { type: "break", label: "MORNING TEA BREAK · 15 MIN", time: "10:30" },
+      { time: "10:45", end: "12:45", dur: "2 h", topic: "Noise Radiation, Vibration, Pressure, Heat Stress – Physical Hazard", type: "mod3" },
+      { type: "break", label: "LUNCH · 1 HR", time: "13:00" },
+      { time: "14:00", end: "16:00", dur: "2 h", topic: "Physical Hazard", cont: true, type: "mod3" },
+      { type: "break", label: "AFTERNOON TEA BREAK · 15 MIN", time: "16:00" },
+      { time: "16:15", end: "17:15", dur: "1 h", topic: "Physical Hazard", cont: true, type: "mod3" },
+    ]
+  },
+  {
+    dayNum: 18, date: "2026-12-02", dow: "WED", trainer: "Zuliaran", module: 4,
+    totalHours: 8.0,
+    schedule: [
+      { time: "08:45", end: "10:45", dur: "2 h", topic: "Occupational Risk Management at Workplace", type: "mod4" },
+      { type: "break", label: "MORNING TEA BREAK · 15 MIN", time: "10:45" },
+      { time: "11:00", end: "13:00", dur: "2 h", topic: "Occupational Risk Management", cont: true, type: "mod4" },
+      { type: "break", label: "LUNCH · 1 HR", time: "13:00" },
+      { time: "14:00", end: "16:00", dur: "2 h", topic: "Occupational Risk Management", cont: true, type: "mod4" },
+      { type: "break", label: "AFTERNOON TEA BREAK · 15 MIN", time: "16:00" },
+      { time: "16:15", end: "18:15", dur: "2 h", topic: "Occupational Risk Management", cont: true, type: "mod4" },
+    ]
+  },
+  {
+    dayNum: 19, date: "2026-12-03", dow: "THU", trainer: "Hj Saifullah", module: 4,
+    totalHours: 8.0,
+    schedule: [
+      { time: "08:45", end: "10:45", dur: "2 h", topic: "OSH Management Systems (ISO 45001:2018)", type: "mod4" },
+      { type: "break", label: "MORNING TEA BREAK · 15 MIN", time: "10:45" },
+      { time: "11:00", end: "13:00", dur: "2 h", topic: "ISO 45001:2018", cont: true, type: "mod4" },
+      { type: "break", label: "LUNCH · 1 HR", time: "13:00" },
+      { time: "14:00", end: "16:00", dur: "2 h", topic: "Incident Prevention", type: "mod4" },
+      { type: "break", label: "AFTERNOON TEA BREAK · 15 MIN", time: "16:00" },
+      { time: "16:15", end: "18:15", dur: "2 h", topic: "Incident Prevention", cont: true, type: "mod4" },
+    ]
+  },
+  {
+    dayNum: 20, date: "2026-12-04", dow: "FRI", trainer: "Hj Saifullah", module: 4,
+    totalHours: 7.0,
+    schedule: [
+      { time: "08:45", end: "10:45", dur: "2 h", topic: "Communication & Performance Monitoring", type: "mod4" },
+      { type: "break", label: "MORNING TEA BREAK · 15 MIN", time: "10:45" },
+      { time: "11:00", end: "13:00", dur: "2 h", topic: "Communication & Performance Monitoring", cont: true, type: "mod4" },
+      { type: "break", label: "LUNCH · 1 HR", time: "13:00" },
+      { time: "14:00", end: "15:00", dur: "1 h", topic: "Communication & Performance Monitoring", cont: true, type: "mod4" },
+      { type: "break", label: "AFTERNOON TEA BREAK · 15 MIN", time: "15:00" },
+      { time: "15:15", end: "17:15", dur: "2 h", topic: "Managing of Emergency", type: "mod4" },
+    ]
+  },
+  {
+    dayNum: 21, date: "2026-12-07", dow: "MON", trainer: "En Hezam", module: 4,
+    totalHours: 8.0,
+    schedule: [
+      { time: "08:45", end: "10:45", dur: "2 h", topic: "Managing of Emergency", type: "mod4" },
+      { type: "break", label: "MORNING TEA BREAK · 15 MIN", time: "10:45" },
+      { time: "11:00", end: "13:00", dur: "2 h", topic: "Managing of Emergency", cont: true, type: "mod4" },
+      { type: "break", label: "LUNCH · 1 HR", time: "13:00" },
+      { time: "14:00", end: "16:00", dur: "2 h", topic: "Managing of Emergency", cont: true, type: "mod4" },
+      { type: "break", label: "AFTERNOON TEA BREAK · 15 MIN", time: "16:00" },
+      { time: "16:15", end: "18:15", dur: "2 h", topic: "WPA (Workplace Assignment Preparation)", type: "mod4" },
+    ]
+  },
+  {
+    dayNum: 22, date: "2026-12-08", dow: "TUE", trainer: "Hj Saifullah", module: 4,
+    totalHours: 8.0,
+    note: "Bring PPE (Safety Boot) for Site Visit",
+    schedule: [
+      { time: "08:00", end: "08:30", dur: "0.5 h", topic: "Breakfast", type: "special" },
+      { time: "08:30", end: "09:00", dur: "0.5 h", topic: "Briefing – Workplace Assignment (WPA) Site Visit", type: "wpa" },
+      { time: "09:00", end: "13:00", dur: "4 h", topic: "Workplace Assignment (WPA) – Site Visit", desc: "⚠ Safety Boot required", type: "wpa" },
+      { type: "break", label: "LUNCH · 1 HR", time: "13:00" },
+      { time: "14:00", end: "16:00", dur: "2 h", topic: "WPA – Discussion & Report Writing", type: "wpa" },
+      { type: "break", label: "AFTERNOON TEA BREAK · 15 MIN", time: "16:00" },
+      { time: "16:15", end: "18:15", dur: "2 h", topic: "WPA – Presentation", type: "wpa" },
+      { time: "18:15", end: "18:45", dur: "0.5 h", topic: "Evaluation and Closing", desc: "NIOSH", type: "special" },
+    ]
+  },
+];
+
+// ═══════════════════════════════════════════
+// STATE
+// ═══════════════════════════════════════════
+
+const TODAY_STR = "2026-11-04"; // actual today from context
+let currentDayIdx = DAYS.findIndex(d => d.date === TODAY_STR);
+if (currentDayIdx < 0) currentDayIdx = 0;
+let selectedIdx = currentDayIdx;
+let currentView = 'day';
+
+// ═══════════════════════════════════════════
+// HELPERS
+// ═══════════════════════════════════════════
+
+function fmtDate(dateStr) {
+  const d = new Date(dateStr + "T00:00:00");
+  return d.toLocaleDateString('en-MY', { weekday: 'short', day: 'numeric', month: 'short' });
+}
+function fmtDateLong(dateStr) {
+  const d = new Date(dateStr + "T00:00:00");
+  return d.toLocaleDateString('en-MY', { weekday: 'long', day: 'numeric', month: 'short' });
+}
+function timeToMins(t) {
+  const [h, m] = t.split(':').map(Number);
+  return h * 60 + m;
+}
+function getNowMins() {
+  const n = new Date();
+  return n.getHours() * 60 + n.getMinutes();
+}
+function pct(t, end, start = 480) {
+  const range = timeToMins(end) - start;
+  const done = getNowMins() - start;
+  return Math.max(0, Math.min(100, Math.round(done / range * 100)));
+}
+function minsLeft(end) {
+  const diff = timeToMins(end) - getNowMins();
+  if (diff <= 0) return null;
+  const h = Math.floor(diff / 60), m = diff % 60;
+  return h > 0 ? `${h} h ${m} min to go` : `${m} min to go`;
+}
+
+// ═══════════════════════════════════════════
+// RENDER DAY STRIP
+// ═══════════════════════════════════════════
+
+function renderStrip() {
+  const strip = document.getElementById('dayStrip');
+  strip.innerHTML = '';
+  DAYS.forEach((d, i) => {
+    const isToday = d.date === TODAY_STR;
+    const isSel = i === selectedIdx;
+    const dt = new Date(d.date + "T00:00:00");
+    const dateNum = dt.getDate();
+    const chip = document.createElement('div');
+    chip.className = 'day-chip' + (isToday ? ' today' : '') + (isSel && !isToday ? ' selected' : '');
+    chip.innerHTML = `
+      <span class="chip-dow">${d.dow}</span>
+      <span class="chip-date">${dateNum}</span>
+      <span class="chip-day">Day ${d.dayNum}</span>
+      <span class="chip-dot"></span>
+    `;
+    chip.onclick = () => { selectedIdx = i; renderAll(); scrollChipIntoView(chip); };
+    strip.appendChild(chip);
+  });
+}
+
+function scrollChipIntoView(chip) {
+  chip.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
+}
+
+// ═══════════════════════════════════════════
+// RENDER DAY VIEW
+// ═══════════════════════════════════════════
+
+function renderDayView() {
+  const dv = document.getElementById('dayView');
+  const day = DAYS[selectedIdx];
+  const isToday = day.date === TODAY_STR;
+  const mod = MOD[day.module];
+  const nowMins = getNowMins();
+
+  // find day start/end for progress
+  const sessions = day.schedule.filter(s => s.type !== 'break');
+  const dayStart = sessions.length ? timeToMins(sessions[0].time) : 480;
+  const dayEnd = sessions.length ? timeToMins(sessions[sessions.length-1].end) : 1020;
+  const progPct = isToday ? Math.max(0, Math.min(100, Math.round((nowMins - dayStart) / (dayEnd - dayStart) * 100))) : 0;
+  const totalMins = dayEnd - dayStart - 60; // rough
+  const minsDone = Math.max(0, nowMins - dayStart);
+  const minsRemain = Math.max(0, dayEnd - nowMins);
+  const hLeft = Math.floor(minsRemain / 60), mLeft = minsRemain % 60;
+
+  let html = `
+    <div class="day-hero">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">
+        <div class="module-tag" style="color:${mod.color}">
+          <span class="mod-dot" style="background:${mod.color}"></span>
+          ${mod.label}
+        </div>
+        ${isToday ? '<span class="today-tag">TODAY</span>' : ''}
+      </div>
+      <div class="hero-day-title">Day ${day.dayNum} · ${fmtDateLong(day.date)}</div>
+      <div class="hero-meta">${sessions[0]?.time || ''}–${sessions[sessions.length-1]?.end || ''} · ${day.totalHours} h of class</div>
+      <div>
+        <span class="lecturer-badge">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+          <span style="font-size:10px;opacity:.5;text-transform:uppercase;letter-spacing:.06em;margin-right:2px;">Lecturer</span>
+          ${day.trainer}
+        </span>
+      </div>
+      ${isToday ? `
+        <div class="progress-line">Now <strong>${String(new Date().getHours()).padStart(2,'0')}:${String(new Date().getMinutes()).padStart(2,'0')}</strong> · <strong>${progPct}%</strong> of today done · ${hLeft > 0 ? hLeft + ' h ' : ''}${mLeft} min to go</div>
+        <div class="progress-bar-wrap"><div class="progress-bar" style="width:${progPct}%"></div></div>
+      ` : ''}
+      <div class="nav-row">
+        <button class="nav-btn" onclick="navigate(-1)" ${selectedIdx===0?'disabled style="opacity:.4;cursor:default"':''}>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15 18 9 12 15 6"/></svg>
+        </button>
+        <button class="today-btn" onclick="goToday()">Today</button>
+        <button class="nav-btn" onclick="navigate(1)" ${selectedIdx===DAYS.length-1?'disabled style="opacity:.4;cursor:default"':''}>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"/></svg>
+        </button>
+      </div>
+    </div>
+  `;
+
+  if (day.note) {
+    html += `<div class="note-banner">⚠ <strong>Note:</strong> ${day.note}</div>`;
+  }
+
+  html += '<div class="timeline">';
+
+  let nowInserted = false;
+  day.schedule.forEach((slot, si) => {
+    if (slot.type === 'break') {
+      html += `<div class="break-row">
+        <div class="break-line"></div>
+        <div class="break-label">${slot.label}</div>
+        <div class="break-line"></div>
+      </div>`;
+      return;
+    }
+    // Insert NOW marker
+    if (isToday && !nowInserted && slot.end) {
+      const slotStart = timeToMins(slot.time);
+      const slotEnd = timeToMins(slot.end);
+      if (nowMins >= slotStart && nowMins <= slotEnd) {
+        nowInserted = true;
+      }
+    }
+
+    const isNow = isToday && slot.end && nowMins >= timeToMins(slot.time) && nowMins < timeToMins(slot.end);
+
+    html += `<div class="slot-row">
+      <div class="slot-time">${slot.time}<br>${slot.end}</div>
+      <div class="slot-body">
+        <div class="session-block ${slot.type}${isNow ? ' now-active' : ''}">
+          ${isNow ? '<span class="now-pill">NOW</span>' : ''}
+          <div class="session-title">
+            ${slot.topic}
+            ${slot.cont ? '<span class="cont-badge">CONT.</span>' : ''}
+          </div>
+          ${slot.desc ? `<div class="session-desc">${slot.desc}</div>` : ''}
+          <div class="session-dur">${slot.dur}</div>
+        </div>
+      </div>
+    </div>`;
+  });
+
+  html += '</div>';
+
+  // Legend
+  html += `
+    <div class="legend">
+      <div class="legend-item"><span class="legend-dot" style="background:#1e3a5f"></span>Module 1 – Legislation</div>
+      <div class="legend-item"><span class="legend-dot" style="background:#065f46"></span>Module 2 – Safety</div>
+      <div class="legend-item"><span class="legend-dot" style="background:#7c2d12"></span>Module 3 – Health & Hygiene</div>
+      <div class="legend-item"><span class="legend-dot" style="background:#4c1d95"></span>Module 4 – Management</div>
+      <div class="legend-item"><span class="legend-dot" style="background:#374151"></span>Special</div>
+      <div class="legend-item"><span class="legend-dot" style="background:#064e3b"></span>WPA / Site Visit</div>
+    </div>
+  `;
+
+  dv.innerHTML = html;
+}
+
+// ═══════════════════════════════════════════
+// RENDER ALL DAYS VIEW
+// ═══════════════════════════════════════════
+
+function renderAllView() {
+  const av = document.getElementById('allView');
+  let html = '<div class="all-days-grid">';
+  DAYS.forEach((day, i) => {
+    const isToday = day.date === TODAY_STR;
+    const mod = MOD[day.module];
+    const topics = day.schedule.filter(s => s.type !== 'break' && !s.cont).slice(0, 3);
+    html += `
+      <div class="day-card ${isToday ? 'is-today' : ''}" onclick="goToDay(${i})">
+        <div class="day-card-header">
+          <div>
+            <div class="day-card-num">Day ${day.dayNum} · ${fmtDate(day.date)}</div>
+            <div class="day-card-date" style="color:${mod.color}">${mod.label.split(' · ')[0]}</div>
+          </div>
+          <div style="display:flex;flex-direction:column;align-items:flex-end;gap:4px;">
+            ${isToday ? '<span class="today-tag">Today</span>' : ''}
+            <span class="day-card-trainer">${day.trainer.split('/')[0]}</span>
+          </div>
+        </div>
+        <div class="day-card-topics">
+          ${topics.map(t => `<div class="topic-pill ${t.type}">${t.topic.length > 55 ? t.topic.slice(0,52)+'…' : t.topic}</div>`).join('')}
+        </div>
+        <div style="margin-top:10px;font-size:12px;color:var(--text3);">${day.totalHours} h · ${day.schedule.filter(s=>s.type!=='break').length} sessions</div>
+      </div>
+    `;
+  });
+  html += '</div>';
+  html += `<div class="legend" style="margin-top:14px;">
+    <div class="legend-item"><span class="legend-dot" style="background:#1e3a5f"></span>Module 1 – Legislation</div>
+    <div class="legend-item"><span class="legend-dot" style="background:#065f46"></span>Module 2 – Safety</div>
+    <div class="legend-item"><span class="legend-dot" style="background:#7c2d12"></span>Module 3 – Health &amp; Hygiene</div>
+    <div class="legend-item"><span class="legend-dot" style="background:#4c1d95"></span>Module 4 – Management</div>
+  </div>`;
+  av.innerHTML = html;
+}
+
+// ═══════════════════════════════════════════
+// CONTROLS
+// ═══════════════════════════════════════════
+
+function navigate(dir) {
+  selectedIdx = Math.max(0, Math.min(DAYS.length - 1, selectedIdx + dir));
+  renderAll();
+  setTimeout(() => {
+    const chips = document.querySelectorAll('.day-chip');
+    if (chips[selectedIdx]) scrollChipIntoView(chips[selectedIdx]);
+  }, 50);
+}
+function goToday() {
+  selectedIdx = currentDayIdx;
+  renderAll();
+  setTimeout(() => {
+    const chips = document.querySelectorAll('.day-chip');
+    if (chips[selectedIdx]) scrollChipIntoView(chips[selectedIdx]);
+  }, 50);
+}
+function goToDay(i) {
+  selectedIdx = i;
+  setView('day');
+}
+function setView(v) {
+  currentView = v;
+  document.getElementById('btnDay').classList.toggle('active', v === 'day');
+  document.getElementById('btnAll').classList.toggle('active', v === 'all');
+  document.getElementById('dayView').style.display = v === 'day' ? '' : 'none';
+  document.getElementById('allView').style.display = v === 'all' ? '' : 'none';
+  if (v === 'all') renderAllView();
+  else renderDayView();
+}
+
+function renderAll() {
+  renderStrip();
+  if (currentView === 'day') renderDayView();
+  else renderAllView();
+}
+
+// ═══════════════════════════════════════════
+// INIT
+// ═══════════════════════════════════════════
+
+renderAll();
+// Auto-scroll to today chip
+setTimeout(() => {
+  const chips = document.querySelectorAll('.day-chip');
+  if (chips[selectedIdx]) scrollChipIntoView(chips[selectedIdx]);
+}, 100);
+// Refresh every minute for live progress
+setInterval(() => { if (currentView === 'day') renderDayView(); }, 60000);
+
+// Keyboard navigation
+document.addEventListener('keydown', e => {
+  if (e.key === 'ArrowLeft') navigate(-1);
+  if (e.key === 'ArrowRight') navigate(1);
+  if (e.key === 't' || e.key === 'T') goToday();
+});
+</script>
+</body>
+</html>
